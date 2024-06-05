@@ -1,0 +1,66 @@
+#define IR_LED_PIN 5 // Digital pin for IR LED
+#define PHOTODETECTOR_PIN A0 // Analog pin for photodetector
+#define BLINK_THRESHOLD 50 // Threshold for blink detection (adjust based on calibration)
+#define CONSECUTIVE_BLINKS 3 // Number of consecutive blinks for drowsiness alert
+#define ALERT_TIMEOUT_MS 30000 // Duration of alert in milliseconds (30 seconds)
+
+#define BUZZER_PIN 8   // Digital pin for buzzer or speaker (optional)
+#define ALERT_FREQUENCY 1000 // Sound frequency in Hz (adjust for desired pitch)
+
+int irLEDValue = 0; // Variable to store IR LED value
+int photodetectorValue = 0; // Variable to store photodetector reading
+unsigned long blinkStartTime = 0; // Time when a potential blink starts
+bool isBlinkDetected = false; // Flag to indicate blink detection
+int blinkCount = 0; // Counter for consecutive blinks
+unsigned long alertStartTime = 0; // Time when drowsiness alert starts
+
+void setup() {
+    pinMode(IR_LED_PIN, OUTPUT);
+    pinMode(ALERT_LED_PIN, OUTPUT); // Optional: Add pin if using an LED for alerts
+    pinMode(BUZZER_PIN, OUTPUT); // Optional: Add pin for sound alert
+}
+
+void loop() {
+    // Read IR LED value (simulates LED on/off for better detection)
+    irLEDValue = !irLEDValue;
+    digitalWrite(IR_LED_PIN, irLEDValue);
+
+    // Read photodetector value
+    photodetectorValue = analogRead(PHOTODETECTOR_PIN);
+
+    // Detect eye blink (potential for improvement)
+    if (isBlinkDetected == false && photodetectorValue < BLINK_THRESHOLD) {
+        blinkStartTime = millis();
+        isBlinkDetected = true;
+    } else if (isBlinkDetected == true && photodetectorValue > BLINK_THRESHOLD) {
+        // Blink duration check (adjust timing as needed)
+        if (millis() - blinkStartTime > 50) { // Adjust blink duration threshold
+            isBlinkDetected = false;
+            blinkCount++;
+        } else {
+            // Short blink, reset blink detection
+            isBlinkDetected = false;
+        }
+    }
+
+    // Drowsiness alert logic (consider additional drowsiness cues)
+    if (blinkCount >= CONSECUTIVE_BLINKS && millis() - alertStartTime >= ALERT_TIMEOUT_MS) {
+        drowsinessAlert();
+    } else if (blinkCount < CONSECUTIVE_BLINKS) {
+        // No drowsiness detected, reset alert if active
+        digitalWrite(ALERT_LED_PIN, LOW); // Optional: Turn off alert LED
+        digitalWrite(BUZZER_PIN, LOW); // Optional: Turn off sound
+    }
+
+    delay(10); // Adjust delay based on desired update rate
+}
+
+void drowsinessAlert() {
+    digitalWrite(ALERT_LED_PIN, HIGH); // Optional: Turn on alert LED
+    blinkCount = 0;
+    alertStartTime = millis();
+
+    // Generate sound alert (optional)
+    tone(BUZZER_PIN, ALERT_FREQUENCY);
+    delay(500); // Adjust sound duration as needed
+    noTone(BUZZER_PIN);
