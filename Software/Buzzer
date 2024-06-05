@@ -1,0 +1,13 @@
+#define BUZZER_PIN 8   // Digital pin for buzzer or speaker
+#define ALERT_FREQUENCY 1000 // Sound frequency in Hz (adjust for desired pitch)
+
+void drowsinessAlert() {
+    digitalWrite(ALERT_LED_PIN, HIGH); // Optional: Turn on alert LED
+    blinkCount = 0; // Reset blink counter
+    alertStartTime = millis();
+
+    // Generate sound alert (optional)
+    tone(BUZZER_PIN, ALERT_FREQUENCY);
+    delay(500); // Adjust sound duration as needed
+    noTone(BUZZER_PIN);
+}
